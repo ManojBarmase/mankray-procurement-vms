@@ -7,9 +7,10 @@
     "start": "nodemon server.js"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
+  "author": "Manoj Barmase",
+  "private": true,
+  "license": "UNLICENSED",
+  "description": "Mankray Backend API - Enterprise Procurement & VMS",
   "dependencies": {
     "bcrypt": "^6.0.0",
     "body-parser": "^1.20.2",

@@ -9,7 +9,8 @@
 [![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react)](https://react.dev)
 [![Node.js](https://img.shields.io/badge/Node.js-Express-339933?style=for-the-badge&logo=node.js)](https://nodejs.org)
 [![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-47A248?style=for-the-badge&logo=mongodb)](https://www.mongodb.com/atlas)
-[![License](https://img.shields.io/badge/License-ISC-yellow?style=for-the-badge)](LICENSE)
+[![License](https://img.shields.io/badge/License-Proprietary%20%2F%20All%20Rights%20Reserved-critical?style=for-the-badge)](#-intellectual-property--terms-of-use)
+[![Portfolio](https://img.shields.io/badge/Purpose-Evaluation%20%26%20Showcase%20Only-blue?style=for-the-badge)](#-intellectual-property--terms-of-use)
 
 *A full-stack, role-based procurement intelligence platform that streamlines software purchase requests, vendor onboarding, contract lifecycle management, third-party integrations, and SaaS analytics — all in one unified workspace.*
 
@@ -36,7 +37,8 @@
 - [Deployment](#-deployment)
 - [File Upload System](#-file-upload-system)
 - [Known Issues & Roadmap](#-known-issues--roadmap)
-- [Contributing](#-contributing)
+- [Intellectual Property & Terms of Use](#-intellectual-property--terms-of-use)
+- [Author & Contact](#-author--contact)
 
 ---
 
@@ -619,31 +621,41 @@ const fileUrl = `${import.meta.env.VITE_API_URL}/uploads/${filename}`;
 
 ---
 
-## 🤝 Contributing
+## 🔒 Intellectual Property & Terms of Use
 
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/your-feature-name`
-3. Commit your changes following [Conventional Commits](https://www.conventionalcommits.org/):
-   ```
-   feat: add email notifications on approval
-   fix: correct CORS whitelist regex
-   docs: update API reference table
-   ```
-4. Push to your branch: `git push origin feature/your-feature-name`
-5. Open a Pull Request with a clear description of changes
+> [!IMPORTANT]
+> **Proprietary Showcase Notice — All Rights Reserved**  
+> Copyright &copy; 2026 **Manoj Barmase**. All rights reserved.
+
+This repository and its source code are maintained publicly **strictly for technical evaluation, code auditing, and hiring portfolio review** by prospective employers, engineering managers, and recruiters.
+
+### 📋 Permitted Use
+- **Hiring & Technical Evaluation:** Recruiters, engineering hiring panels, and interviewers are authorized to view, review, and evaluate the architecture, code quality, and engineering patterns.
+- **Live Demo Testing:** You are welcome to test and explore the live hosted application at [mankray-app.vercel.app](https://mankray-app.vercel.app/).
+
+### 🚫 Strict Restrictions (No License Granted)
+- **No Reproduction or Fork for Republication:** You may **not** copy, clone for rebranding, reproduce, publish, or distribute this codebase or any portion thereof as your own project or product.
+- **No Commercial Exploitation:** You may **not** use, host, sell, sublicense, white-label, or monetize this software, its database schemas, API architecture, or UI components for commercial or production purposes.
+- **No Derivative Works:** Modifying, reverse-engineering, creating derivative products, or extracting components for proprietary systems without express prior written permission from the author is strictly prohibited.
 
 ---
 
-## 📜 License
+## 👨‍💻 Author & Contact
 
-This project is licensed under the **ISC License** — see the [LICENSE](LICENSE) file for details.
+This project was conceived, architected, and engineered end-to-end by **Manoj Barmase**.
+
+- **Author:** Manoj Barmase
+- **Live Demo:** [https://mankray-app.vercel.app](https://mankray-app.vercel.app)
+- **API Health:** [https://task-1mu1.onrender.com/api/status](https://task-1mu1.onrender.com/api/status)
+- **GitHub Profile:** [@ManojBarmase](https://github.com/ManojBarmase)
+- **Inquiries:** For professional hiring opportunities, architecture discussions, or collaboration inquiries, feel free to reach out via GitHub or LinkedIn.
 
 ---
 
 <div align="center">
 
-Built with ❤️ by **Manoj Barmase**
+Designed & Engineered with ❤️ by **Manoj Barmase** &nbsp;·&nbsp; Enterprise Procurement & Vendor Management System
 
-[Live Demo](https://task-pink-seven.vercel.app) &nbsp;·&nbsp; [Report a Bug](https://github.com/ManojBarmase/Task/issues) &nbsp;·&nbsp; [Request a Feature](https://github.com/ManojBarmase/Task/issues)
+[Live Demo](https://mankray-app.vercel.app) &nbsp;·&nbsp; [Backend Status](https://task-1mu1.onrender.com/api/status) &nbsp;·&nbsp; [GitHub Profile](https://github.com/ManojBarmase)
 
 </div>
