@@ -102,19 +102,19 @@ app.use('/api/integrations', require('./routes/integration'));
 app.use('/api/requestors', requestorRoutes);
 
 // app.get('/', (req, res) => {
-//     res.send('ProcureIQ Backend API is running...');
+//     res.send('Mankray Backend API is running...');
 // });
 
 app.get('/api/status', (req, res) => {
   res.json({
-    message: 'ProcureIQ Backend is running!',
+    message: 'Mankray Backend is running!',
     databaseStatus: mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected'
   });
 });
 
 
 app.get('/', (req, res) => {
-    res.send('ProcureIQ Backend is Running. Frontend is hosted on Vercel.');
+    res.send('Mankray Backend is Running. Frontend is hosted on Vercel.');
 });
 // 4. Static Files and Catch-all Handler (For React App)
 // Render recommends placing the static middleware and catch-all handler AFTER all API routes.

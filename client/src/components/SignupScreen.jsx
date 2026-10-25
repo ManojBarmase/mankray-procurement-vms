@@ -66,7 +66,7 @@ const SignupScreen = () => {
                 <div className="text-center mb-8">
                     <div className="inline-flex items-center justify-center p-3 mb-4">
                         {/* Logo Lagaya */}
-                        <img src={logo} alt="ProcureIQ Logo" className="h-12 w-auto object-contain" />
+                        <img src={logo} alt="Mankray Logo" className="h-12 w-auto object-contain" />
                     </div>
                     <h2 className="text-2xl font-bold text-gray-900">Create Your Account</h2>
                     <p className="text-sm text-gray-500">Sign up to start managing your requests.</p>

@@ -71,12 +71,12 @@ const LoginScreen = () => {
                         {/* 👇 YAHAN LOGO LAGAYA HAI */}
                         <img 
                             src={logo1} 
-                            alt="ProcureIQ Logo" 
+                            alt="Mankray Logo" 
                             className="h-16 w-auto mb-2 object-contain" // h-16 size adjust karne ke liye hai
                         />
                     </div>
                     <p className="text-sm text-gray-600 pt-2">
-                        Sign in to your ProcureIQ account
+                        Sign in to your Mankray account
                     </p>
                 </div>
 
@@ -169,9 +169,9 @@ const LoginScreen = () => {
                 </div>
             </div>
             
-            {/* Footer: © 2025 ProcureIQ */}
+            {/* Footer: © 2026 Mankray */}
             <footer className="absolute bottom-4 text-xs text-gray-500">
-                © 2025 ProcureIQ
+                © 2026 Mankray
             </footer>
         </div>
     );

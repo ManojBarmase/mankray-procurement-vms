@@ -639,7 +639,7 @@ const RequestForm = ({ onSave }) => {
             {/* Sidebar */}
             <div className="hidden md:flex flex-col flex-shrink-0 bg-sky-800 border-r border-gray-200 h-full w-64">
                 <div className="h-16 flex items-center justify-center border-b border-sky-700">
-                    <h1 className="text-xl font-bold text-white">ProcureIQ</h1>
+                    <h1 className="text-xl font-bold text-white">Mankray</h1>
                 </div>
                 <div className="p-4">
                     <button
