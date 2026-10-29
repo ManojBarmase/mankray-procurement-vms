@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { User, Mail, Lock, Loader2, Eye, EyeOff } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import logo from '../assets/logo.png'; // Logo import
 import { API_BASE_URL } from '../config/api';
 
@@ -186,12 +186,12 @@ const SignupScreen = () => {
                 {/* Login Link */}
                 <p className="mt-6 text-center text-sm text-gray-600">
                     Already have an account?{' '}
-                    <button
-                        onClick={() => navigate('/')}
-                        className="font-medium text-sky-600 hover:text-sky-500"
+                    <Link
+                        to="/"
+                        className="font-medium text-sky-600 hover:text-sky-500 ml-1"
                     >
                         Sign in
-                    </button>
+                    </Link>
                 </p>
             </div>
         </div>

@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Mail, Lock, Check, Loader2, Eye, EyeOff } from 'lucide-react'; // Icons
 import logo1 from '../assets/logo.png';
 import { API_BASE_URL } from '../config/api';
@@ -185,7 +185,7 @@ const LoginScreen = () => {
                 <div className="flex flex-col text-center pt-2">
                     <p className="text-sm text-gray-500">
                         Don't have an account? 
-                        <a href="/signup" className="text-sky-600 hover:text-sky-800 ml-1 font-medium">Sign up</a>
+                        <Link to="/signup" className="text-sky-600 hover:text-sky-800 ml-1 font-medium">Sign up</Link>
                     </p>
                 </div>
             </div>
