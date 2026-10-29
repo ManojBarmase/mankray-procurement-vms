@@ -2,12 +2,10 @@
 
 import React, { useState } from 'react';
 import axios from 'axios';
-import { User, Mail, Lock } from 'lucide-react';
+import { User, Mail, Lock, Loader2, Eye, EyeOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import logo from '../assets/logo.png'; // Logo import
-
-// const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-const API_BASE_URL = import.meta.env.VITE_API_URL;
+import { API_BASE_URL } from '../config/api';
 
 const SignupScreen = () => {
     const [formData, setFormData] = useState({
@@ -16,6 +14,7 @@ const SignupScreen = () => {
         email: '',
         password: '',
     });
+    const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const navigate = useNavigate();
@@ -43,6 +42,10 @@ const SignupScreen = () => {
             localStorage.setItem('token', res.data.token); 
             localStorage.setItem('userRole', res.data.role); 
             localStorage.setItem('userId', res.data.user.id);
+
+            // Compute and store initials
+            const initials = `${(formData.firstName || '')[0] || ''}${(formData.lastName || '')[0] || ''}`.toUpperCase() || 'U';
+            localStorage.setItem('userNameInitial', initials);
 
             alert("Registration successful! Redirecting to Dashboard."); 
 
@@ -139,13 +142,25 @@ const SignupScreen = () => {
                             <input
                                 id="password"
                                 name="password"
-                                type="password"
+                                type={showPassword ? 'text' : 'password'}
                                 required
                                 value={formData.password}
                                 onChange={handleChange}
                                 placeholder="Enter your password"
-                                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-sky-500 focus:border-sky-500 text-sm"
+                                className="w-full pl-10 pr-11 py-3 border border-gray-300 rounded-lg focus:ring-sky-500 focus:border-sky-500 text-sm"
                             />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none focus-visible:text-sky-600 transition-colors cursor-pointer"
+                                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                            >
+                                {showPassword ? (
+                                    <EyeOff className="w-5 h-5" />
+                                ) : (
+                                    <Eye className="w-5 h-5" />
+                                )}
+                            </button>
                         </div>
                     </div>
 

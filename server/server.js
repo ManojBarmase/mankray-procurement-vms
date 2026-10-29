@@ -3,11 +3,12 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const fs = require('fs');
-require('dotenv').config(); 
-const seedDatabase = require('./seedData');
 const path = require('path');
-const requestorRoutes = require('./routes/requestor');
+// Ensure .env is always loaded from server directory regardless of execution working directory
+require('dotenv').config({ path: path.join(__dirname, '.env') }); 
 
+const seedDatabase = require('./seedData');
+const requestorRoutes = require('./routes/requestor');
 
 // --- 1. Import All Routes Explicitly ---
 const authRoutes = require('./routes/auth'); 
@@ -28,56 +29,79 @@ if (!JWT_SECRET) {
     console.error("JWT_SECRET is not set. Check your .env file.");
 }
 
-// 1. Allowed Origins को Environment Variable से पढ़ें
-const allowedOrigins = [
-  process.env.FRONTEND_URL, // Render URL या लोकल http://localhost:5173
-  'http://localhost:5173',  // Local Vite Dev Server का default port
+// -------------------------------------------------------------
+// Enterprise-Grade CORS Configuration (Express 5 Compatible)
+// -------------------------------------------------------------
+const rawFrontendUrls = process.env.FRONTEND_URL 
+  ? process.env.FRONTEND_URL.split(',').map(url => url.trim().replace(/\/$/, ''))
+  : [];
+
+const defaultAllowedOrigins = [
+  'https://mankray-app.vercel.app',
+  'https://task-pink-seven.vercel.app',
+  'https://task-1mu1.onrender.com',
+  'http://localhost:5173',
   'http://127.0.0.1:5173',
   'http://localhost:5174',
-  'https://task-1mu1.onrender.com',
-  'https://task-pink-seven.vercel.app'
+  'http://localhost:3000'
 ];
+
+const allowedOrigins = Array.from(new Set([...rawFrontendUrls, ...defaultAllowedOrigins]));
+
+const isOriginAllowed = (origin) => {
+  // Allow requests with no origin (e.g. mobile apps, curl, Postman, server-to-server)
+  if (!origin) return true;
+  
+  // Direct whitelist match
+  if (allowedOrigins.includes(origin)) return true;
+
+  // Dynamic regex match: Allow all Mankray / Vercel deployment preview domains
+  if (/^https:\/\/([a-zA-Z0-9_-]+\.)*vercel\.app$/.test(origin)) return true;
+
+  return false;
+};
 
 const corsOptions = {
   origin: (origin, callback) => {
-    // अगर origin allowedOrigins में है, या अगर origin undefined है (जैसे local server-to-server calls)
-    if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+    if (isOriginAllowed(origin)) {
       callback(null, true);
     } else {
-      console.log("Blocked by CORS:", origin);
-      callback(new Error('Not allowed by CORS'));
+      console.warn(`[CORS Blocked] Origin: ${origin}`);
+      // Return null, false to reject CORS gracefully without throwing 500 error
+      callback(null, false);
     }
   },
-  credentials: true, // अगर आप cookies या sessions का उपयोग कर रहे हैं
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: [
+    'Content-Type',
+    'Authorization',
+    'x-auth-token',
+    'Origin',
+    'Accept',
+    'X-Requested-With'
+  ],
+  exposedHeaders: ['x-auth-token'],
+  optionsSuccessStatus: 200 // Legacy browser support
 };
 
+// Global CORS Middleware (Automatically handles all OPTIONS preflights & cross-origin headers)
 app.use(cors(corsOptions));
 
 // Middleware
-// app.use(cors()); 
 app.use(express.json()); 
 
-// 👇 2. YEH LOGIC ADD KAREIN (Uploads Folder Auto-Create)
-// Yeh check karega ki 'uploads' folder hai ya nahi. Agar nahi hai, toh bana dega.
-// 1. Wahi same Absolute Path define karein
-// 1. Same Path Logic Use Karein
-// __dirname = server
-// ..        = Root
-// Result    = Root/uploads
+// Uploads Folder Auto-Create
 const uploadDir = path.join(__dirname, '../uploads');
-
-// 2. Ensure Folder Exists (Double Safety)
 if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
 }
 
-// 3. Serve Static Files
+// Serve Static Files
 console.log("🚀 Serving Static Files from ROOT:", uploadDir);
 app.use('/uploads', express.static(uploadDir));
 
-
-// app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-// 2. MongoDB Connection...
+// MongoDB Connection
 if (!MONGO_URI) {
     console.error("❌ ERROR: MONGO_URI is not defined in .env file.");
     process.exit(1);
@@ -86,12 +110,10 @@ if (!MONGO_URI) {
 mongoose.connect(MONGO_URI)
   .then(() => {
     console.log('✅ MongoDB Connected Successfully!');
-    // seedDatabase(); 
   })
   .catch(err => console.error('❌ MongoDB Connection Error:', err));
 
-
-// 3. Routes Define करें (Using imported variables now) api prefix
+// Routes Define (Using imported variables now)
 app.use('/api/auth', authRoutes); 
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/requests', requestRoutes);
@@ -101,62 +123,26 @@ app.use('/api/analytics', analyticsRoutes);
 app.use('/api/integrations', require('./routes/integration'));
 app.use('/api/requestors', requestorRoutes);
 
-// app.get('/', (req, res) => {
-//     res.send('Mankray Backend API is running...');
-// });
-
+// Health check endpoint
 app.get('/api/status', (req, res) => {
   res.json({
+    status: 'healthy',
     message: 'Mankray Backend is running!',
-    databaseStatus: mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected'
+    databaseStatus: mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected',
+    timestamp: new Date().toISOString()
   });
 });
-
 
 app.get('/', (req, res) => {
     res.send('Mankray Backend is Running. Frontend is hosted on Vercel.');
 });
-// 4. Static Files and Catch-all Handler (For React App)
-// Render recommends placing the static middleware and catch-all handler AFTER all API routes.
-// app.use(express.static(path.join(__dirname, '..', 'client', 'dist')));
 
-// 👇👇 YEH HAI MAIN FIX (Static Files Setup) 👇👇
-
-// A. Client Build Path Define Karein
-// __dirname abhi 'server' folder mein hai, isliye humein '../client/dist' jana hai
-// const clientBuildPath = path.join(__dirname, '../client/dist');
-
-// B. Static Files Serve Karein (CSS, JS, Images)
-// app.use(express.static(clientBuildPath));
-
-// C. Catch-All Route (Sabse Last Mein)
-// Agar koi API route match nahi hua, aur koi static file nahi mili,
-// toh React ka index.html bhej do (SPA routing ke liye)
-// app.get('*', (req, res) => {
-//     res.sendFile(path.join(clientBuildPath, 'index.html'));
-// });
-
-// // FIX: Reverting to simple '*' which is stable on Express 4.x
-// app.get('*', (req, res) => { 
-//   res.sendFile(path.resolve(__dirname, '..', 'client', 'dist', 'index.html'));
-// });
-// app.use((req, res, next) => {
-//     // अगर कोई भी API रूट या स्टैटिक फ़ाइल नहीं मिली है,
-//     // और रिक्वेस्ट GET है (ब्राउज़र नेविगेशन के लिए), तो index.html भेजें।
-//     if (req.method === 'GET') {
-//         res.sendFile(path.resolve(__dirname, '..', 'client', 'dist', 'index.html'));
-//     } else {
-//         // 404/Not Found हैंडलिंग
-//         next();
-//     }
-// });
-
-// Agar aap chahte hain ki galat URL par 404 aaye (Instead of failing)
+// Fallback 404 handler
 app.use((req, res) => {
-    res.status(404).send('Route not found');
+    res.status(404).json({ error: 'Route not found' });
 });
 
-// 5. Server Start करें
+// Server Start
 app.listen(PORT, () => {
   console.log(`🚀 Server listening on port ${PORT}`);
 });

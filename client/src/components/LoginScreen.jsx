@@ -3,24 +3,29 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { Mail, Lock, Chrome, Check } from 'lucide-react'; // Icons
+import { Mail, Lock, Check, Loader2, Eye, EyeOff } from 'lucide-react'; // Icons
 import logo1 from '../assets/logo.png';
-
-// Backend API URL (Vite environment variable से)
-// const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-const API_BASE_URL = import.meta.env.VITE_API_URL;
+import { API_BASE_URL } from '../config/api';
 
 const LoginScreen = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [message, setMessage] = useState('');
     const [loading, setLoading] = useState(false);
+    const [coldStartNotice, setColdStartNotice] = useState(false);
     const navigate = useNavigate();
 
     const handleLogin = async (e) => {
         e.preventDefault();
         setLoading(true);
         setMessage('');
+        setColdStartNotice(false);
+
+        // Detect potential cold-start if free-tier server takes >3.5 seconds
+        const timer = setTimeout(() => {
+            setColdStartNotice(true);
+        }, 3500);
 
         try {
             const response = await axios.post(`${API_BASE_URL}/api/auth/login`, { 
@@ -28,32 +33,42 @@ const LoginScreen = () => {
                 password 
             });
             
+            clearTimeout(timer);
+            setColdStartNotice(false);
+
             localStorage.setItem('token', response.data.token);
             localStorage.setItem('userRole', response.data.role);
             // MongoDB mein ID '_id' hoti hai, isliye hum '_id' save karenge
-            // Agar 'response.data.user.id' kaam nahi kiya, to '_id' pakka karega
             localStorage.setItem('userId', response.data.user._id || response.data.user.id);
+
+            // Compute & save initials for avatar display
+            const userObj = response.data.user || {};
+            const initials = `${(userObj.firstName || '')[0] || ''}${(userObj.lastName || '')[0] || ''}`.toUpperCase() || 'U';
+            localStorage.setItem('userNameInitial', initials);
+
             setMessage('✅ Login Successful! Redirecting...');
             
-            // setTimeout(() => {
-            //     navigate('/dashboard'); 
-            // }, 1500);
             setTimeout(() => {
-                // 👈️ नया रोल-बेस्ड रीडायरेक्ट
                 const userRole = localStorage.getItem('userRole');
                 if (userRole === 'admin' || userRole === 'approver') {
                     navigate('/approvals');
                 } else {
                     navigate('/requests');
                 }
-            }, 1500);
+            }, 1200);
 
         } catch (error) {
+            clearTimeout(timer);
+            setColdStartNotice(false);
             console.error("Login Error:", error.response ? error.response.data : error.message);
-            setMessage(error.response 
-                ? error.response.data.msg || 'Login failed. Check credentials.' 
-                : 'Network Error. Server might be down.'
-            );
+            
+            if (error.response) {
+                setMessage(error.response.data?.msg || 'Login failed. Check credentials.');
+            } else if (error.code === 'ERR_NETWORK' || error.message?.includes('Network Error')) {
+                setMessage('Network Error: Unable to reach server. Please ensure backend is awake and CORS allows this domain.');
+            } else {
+                setMessage(error.message || 'An unexpected error occurred.');
+            }
         } finally {
             setLoading(false);
         }
@@ -68,11 +83,10 @@ const LoginScreen = () => {
                 {/* Header (Logo and Description) */}
                 <div className="text-center space-y-3">
                     <div className="flex px-0 py-1 flex-col items-center justify-center">
-                        {/* 👇 YAHAN LOGO LAGAYA HAI */}
                         <img 
                             src={logo1} 
                             alt="Mankray Logo" 
-                            className="h-16 w-auto mb-2 object-contain" // h-16 size adjust karne ke liye hai
+                            className="h-16 w-auto mb-2 object-contain"
                         />
                     </div>
                     <p className="text-sm text-gray-600 pt-2">
@@ -84,6 +98,13 @@ const LoginScreen = () => {
                 {message && (
                     <div className={`p-3 text-center rounded-lg text-sm ${message.includes('Successful') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                         {message.includes('Successful') && <Check className="inline h-4 w-4 mr-1" />} {message}
+                    </div>
+                )}
+
+                {/* Cold Start Notice (Render Free Tier) */}
+                {coldStartNotice && (
+                    <div className="p-3 bg-amber-50 border border-amber-200 text-amber-800 text-xs rounded-lg text-center animate-pulse">
+                        Waking up backend server... Render free tier instances take ~30-50s on initial spin up. Please wait!
                     </div>
                 )}
 
@@ -118,13 +139,25 @@ const LoginScreen = () => {
                             <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                             <input
                                 id="password"
-                                type="password"
+                                type={showPassword ? 'text' : 'password'}
                                 placeholder="Enter your password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 required
-                                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pl-10 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-colors"
+                                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pl-10 pr-10 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-colors"
                             />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none focus-visible:text-sky-600 transition-colors cursor-pointer"
+                                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                            >
+                                {showPassword ? (
+                                    <EyeOff className="h-4 w-4" />
+                                ) : (
+                                    <Eye className="h-4 w-4" />
+                                )}
+                            </button>
                         </div>
                         <div className="text-right">
                             <a href="#" className="text-xs text-sky-600 hover:text-sky-800">
@@ -136,30 +169,18 @@ const LoginScreen = () => {
                     {/* Login Button */}
                     <button 
                         type="submit" 
-                        className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-4 py-2 w-full bg-sky-600 text-white hover:bg-sky-700"
+                        className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-4 py-2 w-full bg-sky-600 text-white hover:bg-sky-700 font-semibold shadow-sm"
                         disabled={loading}
                     >
-                        {loading ? 'Signing In...' : 'Sign In'}
+                        {loading ? (
+                            <>
+                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                Signing In...
+                            </>
+                        ) : 'Sign In'}
                     </button>
                 </form>
 
-                {/* OR Separator */}
-                <div className="flex items-center my-6">
-                    <div className="flex-grow border-t border-gray-200"></div>
-                    <span className="mx-4 text-xs uppercase text-gray-500 font-medium">
-                        OR CONTINUE WITH
-                    </span>
-                    <div className="flex-grow border-t border-gray-200"></div>
-                </div>
-
-                {/* Continue with Google Button */}
-                <button 
-                    type="button" 
-                    className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-4 py-2 w-full border border-gray-300 text-gray-700  hover:bg-gray-50"
-                >
-                    <Chrome className="mr-2 h-4 w-4" /> Continue with Google
-                </button>
-                
                 {/* Signup Link */}
                 <div className="flex flex-col text-center pt-2">
                     <p className="text-sm text-gray-500">
